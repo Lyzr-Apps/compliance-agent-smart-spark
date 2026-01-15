@@ -1,0 +1,150 @@
+{
+  "agent_name": "Compliance Checker Agent",
+  "agent_id": "69689c97f038ff7259fe36dd",
+  "agent_purpose": "analyzer",
+  "description": "Validates extracted compliance rules against mock portfolio holdings. Returns compliance scores, breach reports with severity levels, compliant items, and remediation suggestions requiring officer approval.",
+  "response_schema": {
+    "status": "string",
+    "result": {
+      "overall_compliance_score": "string",
+      "funds_analyzed": [
+        "string"
+      ],
+      "breaches": [
+        {
+          "fund_name": "string",
+          "rule_violated": "string",
+          "current_value": "string",
+          "limit": "string",
+          "variance": "string",
+          "severity": "string",
+          "exception_applicability": "null",
+          "cross_fund_impact": "boolean",
+          "remediation_suggestion": "string"
+        }
+      ],
+      "compliant_items": [
+        {
+          "fund_name": "string",
+          "rule_checked": "string",
+          "current_value": "string",
+          "limit": "string",
+          "status": "string"
+        }
+      ],
+      "total_rules_checked": "number",
+      "total_breaches": "number",
+      "advisory_notes": [
+        "string"
+      ]
+    },
+    "metadata": {
+      "agent_name": "string",
+      "timestamp": "string"
+    }
+  },
+  "example_response": {
+    "status": "success",
+    "result": {
+      "overall_compliance_score": "66.7",
+      "funds_analyzed": [
+        "China Growth Fund",
+        "Global Bond Fund",
+        "Emerging Markets Fund"
+      ],
+      "breaches": [
+        {
+          "fund_name": "China Growth Fund",
+          "rule_violated": "Cash Holdings Maximum Limit",
+          "current_value": "12%",
+          "limit": "10%",
+          "variance": "+2%",
+          "severity": "Low",
+          "exception_applicability": null,
+          "cross_fund_impact": false,
+          "remediation_suggestion": "RECOMMENDATION (Requires Officer Approval): Rebalance portfolio to reduce cash holdings to at or below 10% by allocating excess cash into eligible securities, or seek formal approval for exceeding the limit with documented rationale."
+        }
+      ],
+      "compliant_items": [
+        {
+          "fund_name": "Global Bond Fund",
+          "rule_checked": "Cash Holdings Maximum Limit",
+          "current_value": "8%",
+          "limit": "10%",
+          "status": "Compliant"
+        },
+        {
+          "fund_name": "Emerging Markets Fund",
+          "rule_checked": "Cash Holdings Maximum Limit",
+          "current_value": "5%",
+          "limit": "10%",
+          "status": "Compliant"
+        }
+      ],
+      "total_rules_checked": 3,
+      "total_breaches": 1,
+      "advisory_notes": [
+        "This is an automated compliance advisory analysis. All findings and remediation suggestions require review and approval by a compliance officer before any action is taken.",
+        "The above analysis does not account for potential documented exceptions or specific fund mandates, which should be reviewed separately."
+      ]
+    },
+    "metadata": {
+      "agent_name": "Compliance Checker Agent",
+      "timestamp": "2024-06-27T21:53:00Z"
+    }
+  },
+  "is_actual_tested": true,
+  "test_timestamp": "2026-01-15T07:56:32.437670",
+  "test_message_used": "Analyze this sample data for testing",
+  "actual_test_response": {
+    "status": "success",
+    "result": {
+      "overall_compliance_score": "66.7",
+      "funds_analyzed": [
+        "China Growth Fund",
+        "Global Bond Fund",
+        "Emerging Markets Fund"
+      ],
+      "breaches": [
+        {
+          "fund_name": "China Growth Fund",
+          "rule_violated": "Cash Holdings Maximum Limit",
+          "current_value": "12%",
+          "limit": "10%",
+          "variance": "+2%",
+          "severity": "Low",
+          "exception_applicability": null,
+          "cross_fund_impact": false,
+          "remediation_suggestion": "RECOMMENDATION (Requires Officer Approval): Rebalance portfolio to reduce cash holdings to at or below 10% by allocating excess cash into eligible securities, or seek formal approval for exceeding the limit with documented rationale."
+        }
+      ],
+      "compliant_items": [
+        {
+          "fund_name": "Global Bond Fund",
+          "rule_checked": "Cash Holdings Maximum Limit",
+          "current_value": "8%",
+          "limit": "10%",
+          "status": "Compliant"
+        },
+        {
+          "fund_name": "Emerging Markets Fund",
+          "rule_checked": "Cash Holdings Maximum Limit",
+          "current_value": "5%",
+          "limit": "10%",
+          "status": "Compliant"
+        }
+      ],
+      "total_rules_checked": 3,
+      "total_breaches": 1,
+      "advisory_notes": [
+        "This is an automated compliance advisory analysis. All findings and remediation suggestions require review and approval by a compliance officer before any action is taken.",
+        "The above analysis does not account for potential documented exceptions or specific fund mandates, which should be reviewed separately."
+      ]
+    },
+    "metadata": {
+      "agent_name": "Compliance Checker Agent",
+      "timestamp": "2024-06-27T21:53:00Z"
+    }
+  },
+  "test_passed": true
+}

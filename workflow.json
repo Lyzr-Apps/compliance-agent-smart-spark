@@ -1,0 +1,112 @@
+{
+  "workflow_name": "GSAM Compliance Agent System",
+  "description": "Advisory-only compliance workflow with rule extraction and portfolio validation",
+  "nodes": [
+    {
+      "id": "user_input",
+      "type": "Input",
+      "label": "Chat Message or PDF Upload",
+      "nodeCategory": "input",
+      "position": { "x": 100, "y": 200 }
+    },
+    {
+      "id": "compliance_manager",
+      "type": "Agent",
+      "label": "Compliance Manager Agent v2",
+      "nodeCategory": "agent",
+      "agent_id": "69689d0df038ff7259fe36fb",
+      "agent_name": "Compliance Manager Agent v2",
+      "position": { "x": 400, "y": 200 }
+    },
+    {
+      "id": "rule_extraction",
+      "type": "Agent",
+      "label": "Rule Extraction Agent",
+      "nodeCategory": "agent",
+      "agent_id": "69689c75f038ff7259fe36d9",
+      "agent_name": "Rule Extraction Agent",
+      "position": { "x": 700, "y": 100 }
+    },
+    {
+      "id": "compliance_checker",
+      "type": "Agent",
+      "label": "Compliance Checker Agent",
+      "nodeCategory": "agent",
+      "agent_id": "69689c97f038ff7259fe36dd",
+      "agent_name": "Compliance Checker Agent",
+      "position": { "x": 700, "y": 300 }
+    },
+    {
+      "id": "output_node",
+      "type": "Output",
+      "label": "Advisory Response",
+      "nodeCategory": "end",
+      "position": { "x": 1000, "y": 200 }
+    }
+  ],
+  "edges": [
+    { "source": "user_input", "target": "compliance_manager" },
+    { "source": "compliance_manager", "target": "rule_extraction" },
+    { "source": "compliance_manager", "target": "compliance_checker" },
+    { "source": "rule_extraction", "target": "output_node" },
+    { "source": "compliance_checker", "target": "output_node" }
+  ],
+  "agents": [
+    {
+      "agent_id": "69689d0df038ff7259fe36fb",
+      "name": "Compliance Manager Agent v2",
+      "type": "Manager",
+      "description": "Coordinates compliance workflow in advisory-only mode",
+      "model": "gpt-4.1",
+      "provider": "OpenAI",
+      "temperature": 0.3,
+      "has_knowledge_base": false,
+      "managed_agents": [
+        {
+          "id": "69689c75f038ff7259fe36d9",
+          "name": "Rule Extraction Agent"
+        },
+        {
+          "id": "69689c97f038ff7259fe36dd",
+          "name": "Compliance Checker Agent"
+        }
+      ]
+    },
+    {
+      "agent_id": "69689c75f038ff7259fe36d9",
+      "name": "Rule Extraction Agent",
+      "type": "Sub-Agent",
+      "description": "Extracts structured compliance rules with comprehensive traceability",
+      "model": "gpt-4.1",
+      "provider": "OpenAI",
+      "temperature": 0.2,
+      "has_knowledge_base": true,
+      "rag_id": "69689c58f0744176a3bf04c8"
+    },
+    {
+      "agent_id": "69689c97f038ff7259fe36dd",
+      "name": "Compliance Checker Agent",
+      "type": "Sub-Agent",
+      "description": "Validates extracted rules against mock portfolio holdings",
+      "model": "gpt-4.1",
+      "provider": "OpenAI",
+      "temperature": 0.3,
+      "has_knowledge_base": false
+    }
+  ],
+  "knowledge_bases": [
+    {
+      "rag_id": "69689c58f0744176a3bf04c8",
+      "rag_name": "gsaminvestmentguidelinesknowledgebaseru1x",
+      "name": "GSAM Investment Guidelines Knowledge Base",
+      "description": "Investment guideline PDFs (IMA versions 1, 2, 3)",
+      "files": [
+        { "filename": "IMA_eg1.pdf", "url": "https://asset.lyzr.app/DVdorrqe" },
+        { "filename": "IMA_eg2.pdf", "url": "https://asset.lyzr.app/6dvY81gP" },
+        { "filename": "IMA_eg3.pdf", "url": "https://asset.lyzr.app/LT23p3gD" }
+      ]
+    }
+  ],
+  "created_at": "2026-01-15T00:00:00Z",
+  "version": "1.0"
+}

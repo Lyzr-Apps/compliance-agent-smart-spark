@@ -1,0 +1,60 @@
+{
+  "agent_name": "compliance_checker_agent",
+  "agent_id": "69689c97f038ff7259fe36dd",
+  "test_message": "Check compliance for the following rule: Cash holdings must not exceed 10% of total portfolio value. Analyze all three funds: China Growth Fund (12% cash), Global Bond Fund (8% cash), Emerging Markets Fund (5% cash).",
+  "expected_purpose": "analyzer",
+  "timestamp": "2026-01-15T07:56:32.437016",
+  "is_valid_json": true,
+  "validation_errors": [],
+  "actual_response": {
+    "status": "success",
+    "result": {
+      "overall_compliance_score": "66.7",
+      "funds_analyzed": [
+        "China Growth Fund",
+        "Global Bond Fund",
+        "Emerging Markets Fund"
+      ],
+      "breaches": [
+        {
+          "fund_name": "China Growth Fund",
+          "rule_violated": "Cash Holdings Maximum Limit",
+          "current_value": "12%",
+          "limit": "10%",
+          "variance": "+2%",
+          "severity": "Low",
+          "exception_applicability": null,
+          "cross_fund_impact": false,
+          "remediation_suggestion": "RECOMMENDATION (Requires Officer Approval): Rebalance portfolio to reduce cash holdings to at or below 10% by allocating excess cash into eligible securities, or seek formal approval for exceeding the limit with documented rationale."
+        }
+      ],
+      "compliant_items": [
+        {
+          "fund_name": "Global Bond Fund",
+          "rule_checked": "Cash Holdings Maximum Limit",
+          "current_value": "8%",
+          "limit": "10%",
+          "status": "Compliant"
+        },
+        {
+          "fund_name": "Emerging Markets Fund",
+          "rule_checked": "Cash Holdings Maximum Limit",
+          "current_value": "5%",
+          "limit": "10%",
+          "status": "Compliant"
+        }
+      ],
+      "total_rules_checked": 3,
+      "total_breaches": 1,
+      "advisory_notes": [
+        "This is an automated compliance advisory analysis. All findings and remediation suggestions require review and approval by a compliance officer before any action is taken.",
+        "The above analysis does not account for potential documented exceptions or specific fund mandates, which should be reviewed separately."
+      ]
+    },
+    "metadata": {
+      "agent_name": "Compliance Checker Agent",
+      "timestamp": "2024-06-27T21:53:00Z"
+    }
+  },
+  "raw_response": "{\n  \"status\": \"success\",\n  \"result\": {\n    \"overall_compliance_score\": \"66.7\",\n    \"funds_analyzed\": [\n      \"China Growth Fund\",\n      \"Global Bond Fund\",\n      \"Emerging Markets Fund\"\n    ],\n    \"breaches\": [\n      {\n        \"fund_name\": \"China Growth Fund\",\n        \"rule_violated\": \"Cash Holdings Maximum Limit\",\n        \"current_value\": \"12%\",\n        \"limit\": \"10%\",\n        \"variance\": \"+2%\",\n        \"severity\": \"Low\",\n        \"exception_applicability\": null,\n        \"cross_fund_impact\": false,\n        \"remediation_suggestion\": \"RECOMMENDATION (Requires Officer Approval): Rebalance portfolio to reduce cash holdings to at or below 10% by allocating excess cash into eligible securities, or seek formal approval for exceeding the limit with documented rationale.\"\n      }\n    ],\n    \"compliant_items\": [\n      {\n        \"fund_name\": \"Global Bond Fund\",\n        \"rule_checked\": \"Cash Holdings Maximum Limit\",\n        \"current_value\": \"8%\",\n        \"limit\": \"10%\",\n        \"status\": \"Compliant\"\n      },\n      {\n        \"fund_name\": \"Emerging Markets Fund\",\n        \"rule_checked\": \"Cash Holdings Maximum Limit\",\n        \"current_value\": \"5%\",\n        \"limit\": \"10%\",\n        \"status\": \"Compliant\"\n      }\n    ],\n    \"total_rules_checked\": 3,\n    \"total_breaches\": 1,\n    \"advisory_notes\": [\n      \"This is an automated compliance advisory analysis. All findings and remediation suggestions require review and approval by a compliance officer before any action is taken.\",\n      \"The above analysis does not account for potential documented exceptions or specific fund mandates, which should be reviewed separately.\"\n    ]\n  },\n  \"metadata\": {\n    \"agent_name\": \"Compliance Checker Agent\",\n    \"timestamp\": \"2024-06-27T21:53:00Z\"\n  }\n}"
+}

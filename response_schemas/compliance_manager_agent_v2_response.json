@@ -1,0 +1,245 @@
+{
+  "agent_name": "Compliance Manager Agent v2",
+  "agent_id": "69689d0df038ff7259fe36fb",
+  "agent_purpose": "manager",
+  "description": "Coordinates compliance workflow and aggregates sub-agent outputs. Returns unified advisory responses with rules tables, compliance scores, breach summaries, and advisory disclaimers.",
+  "response_schema": {
+    "status": "string",
+    "result": {
+      "response_type": "string",
+      "direct_answer": "null",
+      "aggregated_analysis": {
+        "rules_table": [
+          {
+            "rule_id": "string",
+            "rule_name": "string",
+            "applicable_funds": [
+              "string"
+            ],
+            "threshold": "string",
+            "confidence": "number"
+          }
+        ],
+        "overall_compliance_score": "number",
+        "breach_summary": [
+          {
+            "fund": "string",
+            "rule": "string",
+            "severity": "string",
+            "remediation": "string"
+          }
+        ],
+        "compliant_items_count": "number",
+        "ambiguity_flags": [
+          {
+            "issue": "string",
+            "recommendation": "string"
+          }
+        ]
+      },
+      "sub_agent_outputs": {
+        "rule_extraction": {
+          "rules_extracted": "number",
+          "source_documents": [
+            "string"
+          ]
+        },
+        "compliance_check": {
+          "overall_compliance_score": "number",
+          "breaches": "number",
+          "compliant_items": "number"
+        }
+      },
+      "advisory_disclaimer": "string"
+    },
+    "metadata": {
+      "agent_name": "string",
+      "timestamp": "string",
+      "sub_agents_used": [
+        "string"
+      ]
+    }
+  },
+  "example_response": {
+    "status": "success",
+    "result": {
+      "response_type": "aggregated_report",
+      "direct_answer": null,
+      "aggregated_analysis": {
+        "rules_table": [
+          {
+            "rule_id": "R001",
+            "rule_name": "Maximum Cash Holdings in Portfolio (Fixed Income Account)",
+            "applicable_funds": [
+              "GS XX Managed Growth Custom Global Fixed Income"
+            ],
+            "threshold": "10% maximum in cash under normal circumstances",
+            "confidence": 100
+          },
+          {
+            "rule_id": "R002",
+            "rule_name": "Cash and Money Market Instruments Limit (China Equity Portfolio)",
+            "applicable_funds": [
+              "China A Onshore Equity"
+            ],
+            "threshold": "5% of market value in cash/money market instruments (can be exceeded during significant contributions/redemptions)",
+            "confidence": 100
+          },
+          {
+            "rule_id": "R003",
+            "rule_name": "Cash Position Targets (Global Equity Active \u2013 IMA_eg2)",
+            "applicable_funds": [
+              "Global Equity Active"
+            ],
+            "threshold": "Net cash 0-3% max; Gross cash 0-3% max (can be exceeded temporarily due to inflows/redemptions)",
+            "confidence": 100
+          }
+        ],
+        "overall_compliance_score": 66,
+        "breach_summary": [
+          {
+            "fund": "China Growth Fund",
+            "rule": "China A Onshore Equity - Max 5% of market value in cash/money market instruments",
+            "severity": "High",
+            "remediation": "RECOMMENDATION (Requires Officer Approval): Reduce cash allocation to below the 5% limit unless a recent significant cash contribution/redemption is documented and qualifies for exception. If exception applies, document clearly and monitor closely."
+          },
+          {
+            "fund": "China Growth Fund",
+            "rule": "GS XX Managed Growth Custom Global Fixed Income - Cash maximum 10% of account value",
+            "severity": "Low",
+            "remediation": "RECOMMENDATION (Requires Officer Approval): Adjust portfolio cash holdings to fall at or below 10% unless documented temporary exception due to contributions/redemptions applies. If exception, document reason and expected remediation timeline."
+          }
+        ],
+        "compliant_items_count": 2,
+        "ambiguity_flags": [
+          {
+            "issue": "It is unclear if current excess cash in China Growth Fund is due to a documented significant contribution/redemption.",
+            "recommendation": "Obtain supporting documentation to verify exception eligibility and confirm mapping of mandates to extracted rules. Requires human review."
+          },
+          {
+            "issue": "Definitions of 'cash' versus 'money market instruments' may differ between guidelines and accounting.",
+            "recommendation": "Review portfolio composition and guideline language for full alignment, and clarify treatment of short-term instruments. Requires human review."
+          }
+        ]
+      },
+      "sub_agent_outputs": {
+        "rule_extraction": {
+          "rules_extracted": 3,
+          "source_documents": [
+            "IMA_eg1.pdf",
+            "IMA_eg2.pdf",
+            "IMA_eg3.pdf"
+          ]
+        },
+        "compliance_check": {
+          "overall_compliance_score": 66,
+          "breaches": 2,
+          "compliant_items": 2
+        }
+      },
+      "advisory_disclaimer": "This is automated advisory analysis requiring compliance officer review and approval before action."
+    },
+    "metadata": {
+      "agent_name": "Compliance Manager Agent",
+      "timestamp": "2024-06-12T14:44:25Z",
+      "sub_agents_used": [
+        "Rule Extraction Agent",
+        "Compliance Checker Agent"
+      ]
+    }
+  },
+  "is_actual_tested": true,
+  "test_timestamp": "2026-01-15T07:57:34.482235",
+  "test_message_used": "Process this request and coordinate sub-agents",
+  "raw_test_response": "Your request does not specify a compliance guideline, document, question, or analysis to process. Please clarify your compliance need, provide a guideline or document to analyze, or ask a specific compliance question so I can coordinate sub-agents and provide an appropriate advisory analysis.",
+  "test_error": "Response not valid JSON: Expecting value: line 1 column 1 (char 0)",
+  "actual_test_response": {
+    "status": "success",
+    "result": {
+      "response_type": "aggregated_report",
+      "direct_answer": null,
+      "aggregated_analysis": {
+        "rules_table": [
+          {
+            "rule_id": "R001",
+            "rule_name": "Maximum Cash Holdings in Portfolio (Fixed Income Account)",
+            "applicable_funds": [
+              "GS XX Managed Growth Custom Global Fixed Income"
+            ],
+            "threshold": "10% maximum in cash under normal circumstances",
+            "confidence": 100
+          },
+          {
+            "rule_id": "R002",
+            "rule_name": "Cash and Money Market Instruments Limit (China Equity Portfolio)",
+            "applicable_funds": [
+              "China A Onshore Equity"
+            ],
+            "threshold": "5% of market value in cash/money market instruments (can be exceeded during significant contributions/redemptions)",
+            "confidence": 100
+          },
+          {
+            "rule_id": "R003",
+            "rule_name": "Cash Position Targets (Global Equity Active \u2013 IMA_eg2)",
+            "applicable_funds": [
+              "Global Equity Active"
+            ],
+            "threshold": "Net cash 0-3% max; Gross cash 0-3% max (can be exceeded temporarily due to inflows/redemptions)",
+            "confidence": 100
+          }
+        ],
+        "overall_compliance_score": 66,
+        "breach_summary": [
+          {
+            "fund": "China Growth Fund",
+            "rule": "China A Onshore Equity - Max 5% of market value in cash/money market instruments",
+            "severity": "High",
+            "remediation": "RECOMMENDATION (Requires Officer Approval): Reduce cash allocation to below the 5% limit unless a recent significant cash contribution/redemption is documented and qualifies for exception. If exception applies, document clearly and monitor closely."
+          },
+          {
+            "fund": "China Growth Fund",
+            "rule": "GS XX Managed Growth Custom Global Fixed Income - Cash maximum 10% of account value",
+            "severity": "Low",
+            "remediation": "RECOMMENDATION (Requires Officer Approval): Adjust portfolio cash holdings to fall at or below 10% unless documented temporary exception due to contributions/redemptions applies. If exception, document reason and expected remediation timeline."
+          }
+        ],
+        "compliant_items_count": 2,
+        "ambiguity_flags": [
+          {
+            "issue": "It is unclear if current excess cash in China Growth Fund is due to a documented significant contribution/redemption.",
+            "recommendation": "Obtain supporting documentation to verify exception eligibility and confirm mapping of mandates to extracted rules. Requires human review."
+          },
+          {
+            "issue": "Definitions of 'cash' versus 'money market instruments' may differ between guidelines and accounting.",
+            "recommendation": "Review portfolio composition and guideline language for full alignment, and clarify treatment of short-term instruments. Requires human review."
+          }
+        ]
+      },
+      "sub_agent_outputs": {
+        "rule_extraction": {
+          "rules_extracted": 3,
+          "source_documents": [
+            "IMA_eg1.pdf",
+            "IMA_eg2.pdf",
+            "IMA_eg3.pdf"
+          ]
+        },
+        "compliance_check": {
+          "overall_compliance_score": 66,
+          "breaches": 2,
+          "compliant_items": 2
+        }
+      },
+      "advisory_disclaimer": "This is automated advisory analysis requiring compliance officer review and approval before action."
+    },
+    "metadata": {
+      "agent_name": "Compliance Manager Agent",
+      "timestamp": "2024-06-12T14:44:25Z",
+      "sub_agents_used": [
+        "Rule Extraction Agent",
+        "Compliance Checker Agent"
+      ]
+    }
+  },
+  "test_passed": true
+}
