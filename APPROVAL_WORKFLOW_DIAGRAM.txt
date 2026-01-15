@@ -1,0 +1,136 @@
+================================================================================
+            GSAM COMPLIANCE AGENT - TWO-STEP APPROVAL WORKFLOW
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  USER UPLOADS PDF DOCUMENT                                                 │
+│  via Chat Interface attachment button                                      │
+│                                                                             │
+└────────────────────────────────┬────────────────────────────────────────────┘
+                                 │
+                                 ▼
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  STEP 1: RULE EXTRACTION                                                   │
+│  ═══════════════════════════                                               │
+│                                                                             │
+│  Agent Action:                                                             │
+│  • Extract compliance rules from PDF                                       │
+│  • Generate confidence scores (0-100%)                                     │
+│  • Capture source traceability (page, paragraph, quote)                   │
+│  • Identify cross-fund applicability                                       │
+│  • Flag exception conditions                                               │
+│                                                                             │
+│  UI Display:                                                               │
+│  ┌─────────────────────────────────────────────────────────────────────┐  │
+│  │  RULES TABLE                                                        │  │
+│  │  ────────────────────────────────────────────────────────────────   │  │
+│  │  Rule ID | Name | Type | Threshold | Confidence | Source | Expand  │  │
+│  │  R001    | ...  | ...  | ...       | 95%        | Page 3 | [v]     │  │
+│  │  R002    | ...  | ...  | ...       | 88%        | Page 5 | [>]     │  │
+│  │  ...                                                                │  │
+│  │                                                                      │  │
+│  │  [Expandable rows show exact quotes and source details]             │  │
+│  └─────────────────────────────────────────────────────────────────────┘  │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐  │
+│  │  ℹ  REVIEW REQUIRED                                (Blue Card)      │  │
+│  │  ───────────────────────────────────────────────────────────────    │  │
+│  │  Please review the extracted rules above. Click "Approve &          │  │
+│  │  Validate" to check these rules against your portfolio holdings.    │  │
+│  │                                                                      │  │
+│  │  [✓ Approve & Validate Against Portfolio]  [ ✕ Ignore ]            │  │
+│  └─────────────────────────────────────────────────────────────────────┘  │
+│                                                                             │
+└────────────────────────────────┬────────────────────────────────────────────┘
+                                 │
+                USER CLICKS:     │
+              ┌──────────────────┴──────────────────┐
+              │                                     │
+              ▼                                     ▼
+      [ ✕ IGNORE ]                     [ ✓ APPROVE & VALIDATE ]
+              │                                     │
+              ▼                                     ▼
+    ┌──────────────────┐            ┌─────────────────────────────────────────┐
+    │ Confirmation     │            │  STEP 2: PORTFOLIO VALIDATION           │
+    │ message shown    │            │  ════════════════════════════            │
+    │                  │            │                                         │
+    │ "Rules ignored.  │            │  Agent Action:                          │
+    │  Not saved."     │            │  • Validate rules vs. portfolio         │
+    │                  │            │  • Calculate compliance score           │
+    │ END              │            │  • Identify breaches                    │
+    └──────────────────┘            │  • Assess severity levels               │
+                                    │  • Generate remediation suggestions     │
+                                    │  • Analyze cross-fund impact            │
+                                    │                                         │
+                                    │  UI Display:                            │
+                                    │  ┌───────────────────────────────────┐  │
+                                    │  │  COMPLIANCE GAUGE                 │  │
+                                    │  │  ───────────────────              │  │
+                                    │  │        ╭────╮                     │  │
+                                    │  │       │ 66% │   Overall Score    │  │
+                                    │  │        ╰────╯                     │  │
+                                    │  └───────────────────────────────────┘  │
+                                    │                                         │
+                                    │  ┌───────────────────────────────────┐  │
+                                    │  │  BREACH TABLE                     │  │
+                                    │  │  ───────────────────              │  │
+                                    │  │  Fund    | Rule   | Severity     │  │
+                                    │  │  China   | Cash   | CRITICAL     │  │
+                                    │  │  Growth  | 10%    | 12% actual   │  │
+                                    │  │  ...                              │  │
+                                    │  └───────────────────────────────────┘  │
+                                    │                                         │
+                                    │  ┌───────────────────────────────────┐  │
+                                    │  │  ⚠  VERSION CONTROL DECISION      │  │
+                                    │  │     (Amber Card)                  │  │
+                                    │  │  ─────────────────────────────    │  │
+                                    │  │  Compliance validation complete.  │  │
+                                    │  │  Add this as the current version? │  │
+                                    │  │                                   │  │
+                                    │  │  [+ Add to Current Version]       │  │
+                                    │  │  [ ✕ Ignore ]                     │  │
+                                    │  └───────────────────────────────────┘  │
+                                    │                                         │
+                                    └────────────┬────────────────────────────┘
+                                                 │
+                              USER CLICKS:       │
+                            ┌────────────────────┴────────────────────┐
+                            │                                         │
+                            ▼                                         ▼
+                    [ ✕ IGNORE ]                      [ + ADD TO CURRENT VERSION ]
+                            │                                         │
+                            ▼                                         ▼
+                  ┌──────────────────┐                  ┌─────────────────────────┐
+                  │ Confirmation     │                  │  STEP 3: VERSION SAVE   │
+                  │ message shown    │                  │  ════════════════════    │
+                  │                  │                  │                         │
+                  │ "Rules ignored.  │                  │  System Action:         │
+                  │  Not saved."     │                  │  • Create Version 4.0   │
+                  │                  │                  │  • Archive v1, v2, v3   │
+                  │ END              │                  │  • Update Dashboard     │
+                  └──────────────────┘                  │  • Update Ver Control   │
+                                                        │                         │
+                                                        │  Confirmation:          │
+                                                        │  "Successfully added    │
+                                                        │   Version 4.0 with 22   │
+                                                        │   rules. Now current."  │
+                                                        │                         │
+                                                        │  END                    │
+                                                        └─────────────────────────┘
+
+================================================================================
+KEY FEATURES
+================================================================================
+
+✓ Two explicit approval points - officer control at each step
+✓ Visual feedback with color-coded cards (Blue → Amber)
+✓ Clear action buttons with icons (react-icons, no emojis)
+✓ Loading states prevent double-clicks
+✓ Confirmation messages for all actions
+✓ Version control automatically updated
+✓ Changes reflected across all tabs
+✓ Full conversation history preserved
+✓ No auto-save - explicit user decision required
+
+================================================================================

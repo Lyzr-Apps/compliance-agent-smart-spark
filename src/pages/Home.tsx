@@ -36,6 +36,12 @@ interface Message {
   content: string
   timestamp: Date
   agentResponse?: NormalizedAgentResponse
+  pendingApproval?: {
+    type: 'rule_extraction'
+    rules: Rule[]
+    filename: string
+    uploadedFile?: File
+  }
 }
 
 interface Rule {
@@ -637,34 +643,153 @@ export default function Home() {
         const userMessage: Message = {
           id: Date.now().toString(),
           role: 'user',
-          content: `Uploaded file: ${file.name}. Please extract all compliance rules.`,
+          content: `Uploaded file: ${file.name}`,
           timestamp: new Date()
         }
         setMessages((prev) => [...prev, userMessage])
 
+        // Step 1: Extract rules only (no compliance check)
         const result = await callAIAgent(
-          `Extract all compliance rules from the uploaded investment guidelines document: ${file.name}`,
+          `Extract all compliance rules from the uploaded investment guidelines document: ${file.name}. Only extract rules with confidence scores and source traceability. Do not validate against portfolio yet.`,
           COMPLIANCE_MANAGER_AGENT_ID,
           { assets: uploadResult.asset_ids }
         )
 
-        const assistantMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: result.response.message || 'Rules extracted successfully',
-          timestamp: new Date(),
-          agentResponse: result.response
+        if (result.response.status === 'success') {
+          // Get extracted rules from response
+          const extractedRules = result.response.result?.extracted_rules ||
+                                result.response.result?.aggregated_analysis?.rules_table || []
+
+          // Show rules with pending approval
+          const assistantMessage: Message = {
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
+            content: `I've extracted ${extractedRules.length} compliance rules from ${file.name}. Please review the rules below.`,
+            timestamp: new Date(),
+            agentResponse: result.response,
+            pendingApproval: {
+              type: 'rule_extraction',
+              rules: extractedRules,
+              filename: file.name
+            }
+          }
+          setMessages((prev) => [...prev, assistantMessage])
         }
-        setMessages((prev) => [...prev, assistantMessage])
       }
     } catch (error) {
       console.error('Upload error:', error)
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: 'Error processing file. Please try again.',
+        timestamp: new Date()
+      }
+      setMessages((prev) => [...prev, errorMessage])
     } finally {
       setIsLoading(false)
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
     }
+  }
+
+  // Handle approval of extracted rules
+  const handleApproveRules = async (messageId: string) => {
+    const message = messages.find(m => m.id === messageId)
+    if (!message?.pendingApproval) return
+
+    setIsLoading(true)
+
+    try {
+      // Step 2: Validate rules against portfolio
+      const rulesText = message.pendingApproval.rules
+        .map(r => `${r.rule_name}: ${r.value_threshold || r.threshold}`)
+        .join('; ')
+
+      const result = await callAIAgent(
+        `Validate these compliance rules against our portfolio holdings: ${rulesText}. Provide detailed compliance score and breach analysis for all funds.`,
+        COMPLIANCE_MANAGER_AGENT_ID
+      )
+
+      if (result.response.status === 'success') {
+        // Show compliance results
+        const complianceMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: 'Portfolio validation complete. Review the compliance results below.',
+          timestamp: new Date(),
+          agentResponse: result.response,
+          pendingApproval: {
+            type: 'rule_extraction',
+            rules: message.pendingApproval.rules,
+            filename: message.pendingApproval.filename
+          }
+        }
+        setMessages((prev) => [...prev, complianceMessage])
+      }
+    } catch (error) {
+      console.error('Validation error:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Handle adding to current version
+  const handleAddToVersion = (messageId: string) => {
+    const message = messages.find(m => m.id === messageId)
+    if (!message?.pendingApproval) return
+
+    // Create new version
+    const newVersion: Version = {
+      id: `v${mockVersions.length + 1}`,
+      version: `Version ${mockVersions.length + 1}.0`,
+      filename: message.pendingApproval.filename,
+      uploadDate: new Date().toISOString().split('T')[0],
+      ruleCount: message.pendingApproval.rules.length,
+      status: 'current',
+      changes: {
+        added: message.pendingApproval.rules.length,
+        removed: 0,
+        modified: 0
+      }
+    }
+
+    mockVersions.forEach(v => v.status = 'archived')
+    mockVersions.push(newVersion)
+    setSelectedVersion(newVersion.id)
+
+    // Update message to remove pending approval
+    setMessages(prev => prev.map(m =>
+      m.id === messageId
+        ? { ...m, pendingApproval: undefined }
+        : m
+    ))
+
+    // Add confirmation message
+    const confirmMessage: Message = {
+      id: Date.now().toString(),
+      role: 'assistant',
+      content: `Successfully added ${newVersion.version} with ${newVersion.ruleCount} rules. This version is now current and reflected in the Compliance Dashboard and Version Control.`,
+      timestamp: new Date()
+    }
+    setMessages(prev => [...prev, confirmMessage])
+  }
+
+  // Handle ignoring extracted rules
+  const handleIgnoreRules = (messageId: string) => {
+    setMessages(prev => prev.map(m =>
+      m.id === messageId
+        ? { ...m, pendingApproval: undefined }
+        : m
+    ))
+
+    const confirmMessage: Message = {
+      id: Date.now().toString(),
+      role: 'assistant',
+      content: 'Rules extraction ignored. The document was not added to version control.',
+      timestamp: new Date()
+    }
+    setMessages(prev => [...prev, confirmMessage])
   }
 
   // Filter rules based on search and type
@@ -761,6 +886,40 @@ export default function Home() {
                               <RulesTableCard rules={msg.agentResponse.result.extracted_rules} />
                             )}
 
+                            {/* Approval Buttons - Step 1: After Rule Extraction */}
+                            {msg.pendingApproval && !msg.agentResponse.result?.overall_compliance_score && !msg.agentResponse.result?.aggregated_analysis?.overall_compliance_score && (
+                              <Card className="bg-blue-50 border-blue-300">
+                                <CardContent className="pt-4">
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <Info className="h-5 w-5 text-blue-600" />
+                                    <p className="font-semibold text-blue-900">Review Required</p>
+                                  </div>
+                                  <p className="text-sm text-blue-800 mb-4">
+                                    Please review the extracted rules above. Click "Approve & Validate" to check these rules against your portfolio holdings.
+                                  </p>
+                                  <div className="flex gap-3">
+                                    <Button
+                                      onClick={() => handleApproveRules(msg.id)}
+                                      disabled={isLoading}
+                                      className="bg-[#16a34a] hover:bg-[#15803d] text-white"
+                                    >
+                                      <Check className="h-4 w-4 mr-2" />
+                                      Approve & Validate Against Portfolio
+                                    </Button>
+                                    <Button
+                                      onClick={() => handleIgnoreRules(msg.id)}
+                                      disabled={isLoading}
+                                      variant="outline"
+                                      className="border-gray-400 text-gray-700"
+                                    >
+                                      <X className="h-4 w-4 mr-2" />
+                                      Ignore
+                                    </Button>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            )}
+
                             {/* Compliance Gauge */}
                             {msg.agentResponse.result?.overall_compliance_score && (
                               <ComplianceGauge
@@ -791,6 +950,38 @@ export default function Home() {
                             )}
                             {msg.agentResponse.result?.aggregated_analysis?.breach_summary && (
                               <RemediationCard breaches={msg.agentResponse.result.aggregated_analysis.breach_summary} />
+                            )}
+
+                            {/* Version Control Buttons - Step 2: After Compliance Validation */}
+                            {msg.pendingApproval && (msg.agentResponse.result?.overall_compliance_score || msg.agentResponse.result?.aggregated_analysis?.overall_compliance_score) && (
+                              <Card className="bg-amber-50 border-amber-300">
+                                <CardContent className="pt-4">
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <AlertTriangle className="h-5 w-5 text-amber-600" />
+                                    <p className="font-semibold text-amber-900">Version Control Decision</p>
+                                  </div>
+                                  <p className="text-sm text-amber-800 mb-4">
+                                    Compliance validation complete. Would you like to add this as the current version in your system?
+                                  </p>
+                                  <div className="flex gap-3">
+                                    <Button
+                                      onClick={() => handleAddToVersion(msg.id)}
+                                      className="bg-[#16a34a] hover:bg-[#15803d] text-white"
+                                    >
+                                      <Plus className="h-4 w-4 mr-2" />
+                                      Add to Current Version
+                                    </Button>
+                                    <Button
+                                      onClick={() => handleIgnoreRules(msg.id)}
+                                      variant="outline"
+                                      className="border-gray-400 text-gray-700"
+                                    >
+                                      <X className="h-4 w-4 mr-2" />
+                                      Ignore
+                                    </Button>
+                                  </div>
+                                </CardContent>
+                              </Card>
                             )}
 
                             {/* Ambiguity Flags */}
