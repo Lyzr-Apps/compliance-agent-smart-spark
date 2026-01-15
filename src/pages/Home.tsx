@@ -90,6 +90,9 @@ interface Version {
     removed: number
     modified: number
   }
+  rules?: Rule[]
+  complianceScore?: number
+  breaches?: Breach[]
 }
 
 interface Holding {
@@ -125,7 +128,16 @@ const mockVersions: Version[] = [
     uploadDate: '2024-01-15',
     ruleCount: 18,
     status: 'archived',
-    changes: { added: 18, removed: 0, modified: 0 }
+    changes: { added: 18, removed: 0, modified: 0 },
+    complianceScore: 75,
+    rules: [
+      { rule_id: 'R001', rule_name: 'Cash Limit', rule_type: 'Limit', value_threshold: '≤10%', confidence_score: 95, source_section: { page: 3, paragraph: '2.1', exact_quote: 'Cash holdings shall not exceed 10% of total portfolio value' } },
+      { rule_id: 'R002', rule_name: 'Equity Concentration', rule_type: 'Restriction', value_threshold: 'No single equity >15%', confidence_score: 92, source_section: { page: 4, paragraph: '3.2', exact_quote: 'No single equity position shall exceed 15% of portfolio' } },
+      { rule_id: 'R003', rule_name: 'Geographic Restriction', rule_type: 'Restriction', value_threshold: 'China ≤60%', confidence_score: 88, source_section: { page: 5, paragraph: '4.1', exact_quote: 'Total China exposure limited to 60%' } }
+    ],
+    breaches: [
+      { fund_name: 'China Growth Fund', rule_violated: 'Cash Limit', current_value: '12%', limit: '10%', severity: 'High', remediation_suggestion: 'Reduce cash position by 2%' }
+    ]
   },
   {
     id: 'v2',
@@ -134,7 +146,18 @@ const mockVersions: Version[] = [
     uploadDate: '2024-02-20',
     ruleCount: 22,
     status: 'archived',
-    changes: { added: 6, removed: 2, modified: 3 }
+    changes: { added: 6, removed: 2, modified: 3 },
+    complianceScore: 82,
+    rules: [
+      { rule_id: 'R001', rule_name: 'Cash Limit', rule_type: 'Limit', value_threshold: '≤10%', confidence_score: 95, source_section: { page: 3, paragraph: '2.1', exact_quote: 'Cash holdings shall not exceed 10% of total portfolio value' } },
+      { rule_id: 'R002', rule_name: 'Equity Concentration', rule_type: 'Restriction', value_threshold: 'No single equity >12%', confidence_score: 94, source_section: { page: 4, paragraph: '3.2', exact_quote: 'No single equity position shall exceed 12% of portfolio' } },
+      { rule_id: 'R003', rule_name: 'Geographic Restriction', rule_type: 'Restriction', value_threshold: 'China ≤55%', confidence_score: 90, source_section: { page: 5, paragraph: '4.1', exact_quote: 'Total China exposure limited to 55%' } },
+      { rule_id: 'R004', rule_name: 'ESG Minimum Rating', rule_type: 'Requirement', value_threshold: '≥BBB', confidence_score: 87, source_section: { page: 6, paragraph: '5.3', exact_quote: 'All holdings must maintain ESG rating of BBB or higher' } }
+    ],
+    breaches: [
+      { fund_name: 'China Growth Fund', rule_violated: 'Cash Limit', current_value: '12%', limit: '10%', severity: 'High', remediation_suggestion: 'Reduce cash position by 2%' },
+      { fund_name: 'Emerging Markets Fund', rule_violated: 'Geographic Restriction', current_value: '15%', limit: '12%', severity: 'Medium', remediation_suggestion: 'Reduce Brazil exposure by 3%' }
+    ]
   },
   {
     id: 'v3',
@@ -143,7 +166,20 @@ const mockVersions: Version[] = [
     uploadDate: '2024-03-10',
     ruleCount: 24,
     status: 'current',
-    changes: { added: 3, removed: 1, modified: 4 }
+    changes: { added: 3, removed: 1, modified: 4 },
+    complianceScore: 67,
+    rules: [
+      { rule_id: 'R001', rule_name: 'Cash Limit', rule_type: 'Limit', value_threshold: '≤10%', confidence_score: 95, source_section: { page: 3, paragraph: '2.1', exact_quote: 'Cash holdings shall not exceed 10% of total portfolio value' } },
+      { rule_id: 'R002', rule_name: 'Equity Concentration', rule_type: 'Restriction', value_threshold: 'No single equity >12%', confidence_score: 94, source_section: { page: 4, paragraph: '3.2', exact_quote: 'No single equity position shall exceed 12% of portfolio' } },
+      { rule_id: 'R003', rule_name: 'Geographic Restriction - China', rule_type: 'Restriction', value_threshold: 'China ≤50%', confidence_score: 92, source_section: { page: 5, paragraph: '4.1', exact_quote: 'Total China exposure limited to 50%' } },
+      { rule_id: 'R004', rule_name: 'ESG Minimum Rating', rule_type: 'Requirement', value_threshold: '≥BBB', confidence_score: 87, source_section: { page: 6, paragraph: '5.3', exact_quote: 'All holdings must maintain ESG rating of BBB or higher' } },
+      { rule_id: 'R005', rule_name: 'Sector Concentration', rule_type: 'Limit', value_threshold: '≤30% per sector', confidence_score: 89, source_section: { page: 7, paragraph: '6.2', exact_quote: 'No single sector shall exceed 30% of equity holdings' } }
+    ],
+    breaches: [
+      { fund_name: 'China Growth Fund', rule_violated: 'Cash Limit', current_value: '12%', limit: '10%', severity: 'High', remediation_suggestion: 'Reduce cash position by 2%' },
+      { fund_name: 'Emerging Markets Fund', rule_violated: 'Geographic Restriction - Brazil', current_value: '15%', limit: '12%', severity: 'Medium', remediation_suggestion: 'Reduce Brazil exposure by 3%' },
+      { fund_name: 'Global Bond Fund', rule_violated: 'Duration Limit', current_value: '8.2 years', limit: '7.5 years', severity: 'Low', remediation_suggestion: 'Shorten portfolio duration' }
+    ]
   }
 ]
 
@@ -1121,50 +1157,48 @@ export default function Home() {
                         </Button>
                         <Button
                           size="sm"
-                          variant={filterType === 'Cash Limit' ? 'default' : 'outline'}
-                          onClick={() => setFilterType('Cash Limit')}
-                          className={filterType === 'Cash Limit' ? 'bg-[#1a365d]' : ''}
+                          variant={filterType === 'Limit' ? 'default' : 'outline'}
+                          onClick={() => setFilterType('Limit')}
+                          className={filterType === 'Limit' ? 'bg-[#1a365d]' : ''}
                         >
-                          Cash Limits
+                          Limits
                         </Button>
                         <Button
                           size="sm"
-                          variant={filterType === 'Concentration Limit' ? 'default' : 'outline'}
-                          onClick={() => setFilterType('Concentration Limit')}
-                          className={filterType === 'Concentration Limit' ? 'bg-[#1a365d]' : ''}
+                          variant={filterType === 'Restriction' ? 'default' : 'outline'}
+                          onClick={() => setFilterType('Restriction')}
+                          className={filterType === 'Restriction' ? 'bg-[#1a365d]' : ''}
                         >
-                          Concentration
+                          Restrictions
                         </Button>
                         <Button
                           size="sm"
-                          variant={filterType === 'Geographic Restriction' ? 'default' : 'outline'}
-                          onClick={() => setFilterType('Geographic Restriction')}
-                          className={filterType === 'Geographic Restriction' ? 'bg-[#1a365d]' : ''}
+                          variant={filterType === 'Requirement' ? 'default' : 'outline'}
+                          onClick={() => setFilterType('Requirement')}
+                          className={filterType === 'Requirement' ? 'bg-[#1a365d]' : ''}
                         >
-                          Geographic
+                          Requirements
                         </Button>
                       </div>
                     </CardHeader>
                     <CardContent>
                       <ScrollArea className="h-[500px]">
                         <div className="space-y-2">
-                          {/* Sample rules from test data */}
-                          {[
-                            { rule_id: 'R001', rule_name: 'Cash Position Limit', rule_type: 'Cash Limit', threshold: 'Net cash 0-3% max', confidence: 92 },
-                            { rule_id: 'R002', rule_name: 'Single Equity Concentration', rule_type: 'Concentration Limit', threshold: '10% weight max', confidence: 92 },
-                            { rule_id: 'R003', rule_name: 'Sector Concentration', rule_type: 'Concentration Limit', threshold: 'BM ±15%', confidence: 90 },
-                            { rule_id: 'R004', rule_name: 'Off-Benchmark Stock Limit', rule_type: 'Concentration Limit', threshold: '<20% weight', confidence: 90 },
-                            { rule_id: 'R005', rule_name: 'Off-Benchmark Country', rule_type: 'Geographic Restriction', threshold: '<10% weight', confidence: 90 }
-                          ]
-                            .filter((rule) => {
-                              if (searchQuery && !rule.rule_name.toLowerCase().includes(searchQuery.toLowerCase()) && !rule.rule_id.toLowerCase().includes(searchQuery.toLowerCase())) {
-                                return false
-                              }
-                              if (filterType !== 'all' && rule.rule_type !== filterType) {
-                                return false
-                              }
-                              return true
-                            })
+                          {/* Get rules from selected version */}
+                          {(() => {
+                            const currentVersion = mockVersions.find(v => v.id === selectedVersion)
+                            const versionRules = currentVersion?.rules || []
+                            return versionRules
+                              .filter((rule) => {
+                                if (searchQuery && !rule.rule_name.toLowerCase().includes(searchQuery.toLowerCase()) && !rule.rule_id.toLowerCase().includes(searchQuery.toLowerCase())) {
+                                  return false
+                                }
+                                if (filterType !== 'all' && rule.rule_type !== filterType) {
+                                  return false
+                                }
+                                return true
+                              })
+                          })()
                             .map((rule) => (
                               <Card key={rule.rule_id} className="p-3 hover:shadow-md transition-shadow cursor-pointer">
                                 <div className="flex items-start justify-between">
@@ -1172,11 +1206,11 @@ export default function Home() {
                                     <div className="font-mono text-xs text-gray-500 mb-1">{rule.rule_id}</div>
                                     <div className="font-medium text-sm mb-2">{rule.rule_name}</div>
                                     <Badge variant="outline" className="text-xs mb-2">{rule.rule_type}</Badge>
-                                    <div className="text-sm text-gray-600">{rule.threshold}</div>
+                                    <div className="text-sm text-gray-600">{rule.value_threshold}</div>
                                   </div>
                                   <div className="flex flex-col items-end gap-1">
-                                    <Progress value={rule.confidence} className="w-16 h-2" />
-                                    <span className="text-xs text-gray-600">{rule.confidence}%</span>
+                                    <Progress value={rule.confidence_score || rule.confidence} className="w-16 h-2" />
+                                    <span className="text-xs text-gray-600">{rule.confidence_score || rule.confidence}%</span>
                                   </div>
                                 </div>
                               </Card>
@@ -1190,54 +1224,52 @@ export default function Home() {
                 {/* Right Panel - Status */}
                 <div className="lg:col-span-3 space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <ComplianceGauge score={66} />
+                    {(() => {
+                      const currentVersion = mockVersions.find(v => v.id === selectedVersion)
+                      return <ComplianceGauge score={currentVersion?.complianceScore || 0} />
+                    })()}
 
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-[#1a365d]">Quick Stats</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">Total Rules</span>
-                          <span className="font-bold text-lg">24</span>
-                        </div>
-                        <Separator />
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">Breaches</span>
-                          <span className="font-bold text-lg text-red-600">2</span>
-                        </div>
-                        <Separator />
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">Compliant Items</span>
-                          <span className="font-bold text-lg text-green-600">2</span>
-                        </div>
-                        <Separator />
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-gray-600">Pending Reviews</span>
-                          <span className="font-bold text-lg text-amber-600">2</span>
-                        </div>
-                      </CardContent>
-                    </Card>
+                    {(() => {
+                      const currentVersion = mockVersions.find(v => v.id === selectedVersion)
+                      const totalRules = currentVersion?.ruleCount || 0
+                      const breachCount = currentVersion?.breaches?.length || 0
+                      const compliantCount = totalRules - breachCount
+
+                      return (
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-[#1a365d]">Quick Stats</CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-gray-600">Total Rules</span>
+                              <span className="font-bold text-lg">{totalRules}</span>
+                            </div>
+                            <Separator />
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-gray-600">Breaches</span>
+                              <span className="font-bold text-lg text-red-600">{breachCount}</span>
+                            </div>
+                            <Separator />
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-gray-600">Compliant Items</span>
+                              <span className="font-bold text-lg text-green-600">{compliantCount}</span>
+                            </div>
+                            <Separator />
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-gray-600">Pending Reviews</span>
+                              <span className="font-bold text-lg text-amber-600">0</span>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )
+                    })()}
                   </div>
 
-                  <BreachTable
-                    breaches={[
-                      {
-                        fund: 'China Growth Fund',
-                        rule: 'Cash Holdings Maximum',
-                        current_value: '12%',
-                        limit: '5%',
-                        severity: 'High'
-                      },
-                      {
-                        fund: 'China Growth Fund',
-                        rule: 'Fixed Income Cash Limit',
-                        current_value: '12%',
-                        limit: '10%',
-                        severity: 'Low'
-                      }
-                    ]}
-                  />
+                  {(() => {
+                    const currentVersion = mockVersions.find(v => v.id === selectedVersion)
+                    return <BreachTable breaches={currentVersion?.breaches || []} />
+                  })()}
 
                   <AmbiguitySection
                     flags={[
